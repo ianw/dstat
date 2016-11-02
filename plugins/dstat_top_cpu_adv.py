@@ -6,9 +6,12 @@
 class dstat_plugin(dstat):
     def __init__(self):
         self.name = 'most expensive cpu process'
-        self.vars = ('process              pid  cpu read write',)
+                    # 0123456789012345678901234567890123456789
+        self.vars = ('process             pid  cpu  read write',)
+                    # a-long-process-na 12345 100% XXXXB XXXXB
         self.type = 's'
         self.width = 40
+        self.name_max_width = 17
         self.scale = 0
         self.pidset1 = {}
 
@@ -67,7 +70,14 @@ class dstat_plugin(dstat):
             self.pidset1 = self.pidset2
 
         if self.val['cpu_usage'] != 0.0:
-            self.output = '%-*s%s%-5s%s%s%%%s%s' % (self.width-14-len(pid), self.val['name'][0:self.width-14-len(pid)], color['darkblue'], self.val['pid'], cprint(self.val['cpu_usage'], 'f', 3, 34), color['darkgray'],cprint(self.val['read_usage'], 'd', 5, 1024), cprint(self.val['write_usage'], 'd', 5, 1024))
+            self.output = '{name:<{name_max_width}} {darkblue}{pid:>5} {cpu_usage:>4} {read:>5} {write:>5}'.format(
+                name = self.val['name'],
+                name_max_width = self.name_max_width,
+                darkblue = color['darkblue'],
+                pid = self.val['pid'],
+                cpu_usage = cprint(self.val['cpu_usage'], 'f', 3, 34)+'%',
+                read = cprint(self.val['read_usage'], 'd', 5, 1024),
+                write = cprint(self.val['write_usage'], 'd', 5, 1024))
 
 
     def showcsv(self):
